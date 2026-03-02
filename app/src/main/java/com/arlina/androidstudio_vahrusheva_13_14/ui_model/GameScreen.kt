@@ -57,9 +57,13 @@ fun GameScreen(
             score = gameUiState.score
         )
         GameLoyout(
-            currentScrambledWord = gameUiState.currentScrambledWord,
-            onUserGuessChanged = {},
-            onKeyboardDone = {}
+            currentScrambleWord = gameUiState.currentScrambledWord,
+            userGuess = gameViewModel.userGuess,
+            onUserGuessChanged = { gameViewModel.updateUserGuess(it) },
+            onKeyboardDone = { gameViewModel.checkUserGuess() },
+            isGuessWrong = gameUiState.isGuessedWordWrong,
+            onSubmitClicked = { gameViewModel.checkUserGuess() },
+            onSkipClicked = { gameViewModel.skipWord() }
         )
     }
 }
@@ -98,9 +102,13 @@ fun GameStatus(
 
 @Composable
 fun GameLoyout(
-    currentScrambledWord: String,
+    currentScrambleWord: String,
+    userGuess: String,
     onUserGuessChanged: (String) -> Unit,
     onKeyboardDone: () -> Unit,
+    isGuessWrong: Boolean,
+    onSubmitClicked: () -> Unit,
+    onSkipClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var userGuess by remember { mutableStateOf("") }
@@ -122,7 +130,7 @@ fun GameLoyout(
                 contentAlignment = Alignment.Center
             ){
                 Text(
-                    text = currentScrambledWord,
+                    text = currentScrambleWord,
                     style = MaterialTheme.typography.displayMedium,
                     fontSize = 45.sp
                 )
@@ -141,6 +149,7 @@ fun GameLoyout(
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             label = {Text("Введите слово")},
+            isError = isGuessWrong,
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Done
             ),
@@ -148,15 +157,22 @@ fun GameLoyout(
                 onDone = {onKeyboardDone()}
             )
         )
+        if (isGuessWrong){
+            Text(
+                text = "неправильно! попробуй езе раз",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
         Button(
-            onClick = {/* TODO */},
+            onClick = onSubmitClicked,
             modifier = Modifier.fillMaxWidth()
         ) {Text(
-            text = "Проверить",
+            text = "проверить",
             fontSize = 16.sp
         )}
         OutlinedButton(
-            onClick = {/* TODO */},
+            onClick = onSkipClicked,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
